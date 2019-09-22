@@ -4,6 +4,15 @@
 #include "header.h"
 #include "scanner.h"
 
+int checkVariableNameChar(char c) {
+  return isgraph(c) &&
+         c != '+' &&
+         c != '-' &&
+         c != '*' &&
+         c != '/' &&
+         c != '=';
+}
+
 Token getNumericToken( FILE *source, char c )
 {
   Token token;
@@ -41,6 +50,21 @@ Token getNumericToken( FILE *source, char c )
   return token;
 }
 
+Token getVariableNameToken(FILE *source, char c) {
+  Token token;
+  token.type = VariableName;
+  token.tok[0] = c;
+  int i = 1;
+  c = fgetc(source);
+  while (checkVariableNameChar(c)) {
+    token.tok[i++] = c;
+    c = fgetc(source);
+  }
+  ungetc(c, source);
+  token.tok[i] = '\0';
+  return token;
+}
+
 Token scanner( FILE *source )
 {
   char c;
@@ -57,40 +81,43 @@ Token scanner( FILE *source )
     token.tok[0] = c;
     token.tok[1] = '\0';
     if( islower(c) ){
-      if( c == 'f' )
-	token.type = FloatDeclaration;
-      else if( c == 'i' )
-	token.type = IntegerDeclaration;
-      else if( c == 'p' )
-	token.type = PrintOp;
-      else
-	token.type = Alphabet;
+      if( c == 'f' ) {
+	      token.type = FloatDeclaration;
+      } else if( c == 'i' ) {
+	      token.type = IntegerDeclaration;
+      } else if( c == 'p' ) {
+	      token.type = PrintOp;
+      } else {
+	      return getVariableNameToken(source, c);
+      }
       return token;
+    } else if (checkVariableNameChar(c)) {
+      return getVariableNameToken(source, c);
     }
 
-    switch(c){
-    case '=':
-      token.type = AssignmentOp;
-      return token;
-    case '+':
-      token.type = PlusOp;
-      return token;
-    case '-':
-      token.type = MinusOp;
-      return token;
-    case '*':
-      token.type = MulOp;
-      return token;
-    case '/':
-      token.type = DivOp;
-      return token;
-    case EOF:
-      token.type = EOFsymbol;
-      token.tok[0] = '\0';
-      return token;
-    default:
-      printf("Invalid character : %c\n", c);
-      exit(1);
+    switch(c) {
+      case '=':
+        token.type = AssignmentOp;
+        return token;
+      case '+':
+        token.type = PlusOp;
+        return token;
+      case '-':
+        token.type = MinusOp;
+        return token;
+      case '*':
+        token.type = MulOp;
+        return token;
+      case '/':
+        token.type = DivOp;
+        return token;
+      case EOF:
+        token.type = EOFsymbol;
+        token.tok[0] = '\0';
+        return token;
+      default:
+        printf("Invalid character : %c\n", c);
+        exit(1);
     }
   }
 

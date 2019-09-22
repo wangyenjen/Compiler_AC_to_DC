@@ -14,7 +14,7 @@
 *******************************************************************************************************************************************/
 
 typedef enum TokenType { FloatDeclaration, IntegerDeclaration, PrintOp, AssignmentOp, PlusOp, MinusOp,
-			 MulOp, DivOp, Alphabet, IntValue, FloatValue, EOFsymbol } TokenType;
+			 MulOp, DivOp, VariableName, IntValue, FloatValue, EOFsymbol } TokenType;
 typedef enum DataType { Int, Float, Notype }DataType;
 typedef enum StmtType { Print, Assignment } StmtType;
 typedef enum ValueType { Identifier, IntConst, FloatConst, PlusNode, MinusNode, MulNode, DivNode, IntToFloatConvertNode } ValueType;
@@ -38,7 +38,7 @@ typedef struct Token{
 /* For decl production or say one declaration statement */
 typedef struct Declaration{
   DataType type;
-  char name;
+  char name[1025];
 }Declaration;
 
 /* 
@@ -56,7 +56,7 @@ typedef struct Declarations{
 typedef struct Value{
   ValueType type;
   union{
-    char id;                   /* if the node represent the access of the identifier */
+    char id[1025];             /* if the node represent the access of the identifier */
     Operation op;              /* store +, -, *, /, =, type_convert */
     int ivalue;                /* for integer constant in the expression */
     float fvalue;              /* for float constant */
@@ -79,7 +79,7 @@ typedef struct Expression{
 
 /* For one assignment statement */
 typedef struct AssignmentStatement{
-  char id;
+  char id[1025];
   Expression *expr;
   DataType type;      /* For type checking to store the type of all expression on the right. */
 }AssignmentStatement;
@@ -89,7 +89,7 @@ typedef struct AssignmentStatement{
 typedef struct Statement{
   StmtType type;
   union{
-    char variable;              /* print statement */
+    char variable[1025];        /* print statement */
     AssignmentStatement assign;
   }stmt;
 }Statement;
@@ -108,7 +108,9 @@ typedef struct Program{
 
 /* For building the symbol table */
 typedef struct SymbolTable{
+  int max_index;
   DataType table[26];
+  char symbol_name[26][1025];
 } SymbolTable;
 
 #endif // HEADER_H

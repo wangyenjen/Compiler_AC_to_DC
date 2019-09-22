@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
       fclose(source);
       symtab = build(program);
       check(&program, &symtab);
-      gencode(program, target);
+      gencode(program, target, &symtab);
     }
   }
   else{

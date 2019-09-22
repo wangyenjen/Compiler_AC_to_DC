@@ -6,6 +6,13 @@
 #include "parser.h"
 #include "ast.h"
 
+void unTake(FILE *source, Token token) {
+  int len = strlen(token.tok);
+  for (int i = len - 1; i >= 0; i--) {
+    ungetc(token.tok[i], source);
+  }
+}
+
 Declaration parseDeclaration( FILE *source, Token token )
 {
   Token token2;
@@ -38,8 +45,8 @@ Declarations *parseDeclarations( FILE *source )
     decls = parseDeclarations(source);
     return makeDeclarationTree( decl, decls );
   case PrintOp:
-  case Alphabet:
-    ungetc(token.tok[0], source);
+  case VariableName:
+    unTake(source, token);
     return NULL;
   case EOFsymbol:
     return NULL;
@@ -56,9 +63,9 @@ Expression *parseValue( FILE *source )
   value->leftOperand = value->rightOperand = NULL;
 
   switch(token.type){
-  case Alphabet:
+  case VariableName:
     (value->v).type = Identifier;
-    (value->v).val.id = token.tok[0];
+    strcpy((value->v).val.id, token.tok);
     break;
   case IntValue:
     (value->v).type = IntConst;
@@ -96,9 +103,9 @@ Expression *parseExpressionTail( FILE *source, Expression *lvalue )
     expr->leftOperand = lvalue;
     expr->rightOperand = parseValue(source);
     return parseExpressionTail(source, expr);
-  case Alphabet:
+  case VariableName:
   case PrintOp:
-    ungetc(token.tok[0], source);
+    unTake(source, token);
     return lvalue;
   case EOFsymbol:
     return lvalue;
@@ -128,9 +135,9 @@ Expression *parseExpression( FILE *source, Expression *lvalue )
     expr->leftOperand = lvalue;
     expr->rightOperand = parseValue(source);
     return parseExpressionTail(source, expr);
-  case Alphabet:
+  case VariableName:
   case PrintOp:
-    ungetc(token.tok[0], source);
+    unTake(source, token);
     return NULL;
   case EOFsymbol:
     return NULL;
@@ -146,12 +153,12 @@ Statement parseStatement( FILE *source, Token token )
   Expression *value, *expr;
 
   switch(token.type){
-  case Alphabet:
+  case VariableName:
     next_token = scanner(source);
     if(next_token.type == AssignmentOp){
       value = parseValue(source);
       expr = parseExpression(source, value);
-      return makeAssignmentNode(token.tok[0], value, expr);
+      return makeAssignmentNode(token.tok, value, expr);
     }
     else{
       printf("Syntax Error: Expect an assignment op %s\n", next_token.tok);
@@ -159,8 +166,8 @@ Statement parseStatement( FILE *source, Token token )
     }
   case PrintOp:
     next_token = scanner(source);
-    if(next_token.type == Alphabet)
-      return makePrintNode(next_token.tok[0]);
+    if(next_token.type == VariableName)
+      return makePrintNode(next_token.tok);
     else{
       printf("Syntax Error: Expect an identifier %s\n", next_token.tok);
       exit(1);
@@ -180,7 +187,7 @@ Statements *parseStatements( FILE * source )
   Statements *stmts;
 
   switch(token.type){
-  case Alphabet:
+  case VariableName:
   case PrintOp:
     stmt = parseStatement(source, token);
     stmts = parseStatements(source);
