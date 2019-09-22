@@ -83,10 +83,81 @@ Expression *parseValue( FILE *source )
   return value;
 }
 
-Expression *parseExpressionTail( FILE *source, Expression *lvalue )
+Expression *parseTermTail( FILE *source, Expression *lvalue )
 {
   Token token = scanner(source);
   Expression *expr;
+
+  switch(token.type){
+  case MulOp:
+    expr = (Expression *)malloc( sizeof(Expression) );
+    (expr->v).type = MulNode;
+    (expr->v).val.op = Mul;
+    expr->leftOperand = lvalue;
+    expr->rightOperand = parseValue(source);
+    return parseTermTail(source, expr);
+  case DivOp:
+    expr = (Expression *)malloc( sizeof(Expression) );
+    (expr->v).type = DivNode;
+    (expr->v).val.op = Div;
+    expr->leftOperand = lvalue;
+    expr->rightOperand = parseValue(source);
+    return parseTermTail(source, expr);
+  case PlusOp:
+  case MinusOp:
+  case VariableName:
+  case PrintOp:
+    unTake(source, token);
+    return lvalue;
+  case EOFsymbol:
+    return lvalue;
+  default:
+    printf("Syntax Error: Expect a numeric value or an identifier %s\n", token.tok);
+    exit(1);
+  }
+}
+
+Expression *parseTerm( FILE *source, Expression *lvalue )
+{
+  Token token = scanner(source);
+  Expression *expr;
+
+  switch(token.type){
+  case MulOp:
+    expr = (Expression *)malloc( sizeof(Expression) );
+    (expr->v).type = MulNode;
+    (expr->v).val.op = Mul;
+    expr->leftOperand = lvalue;
+    expr->rightOperand = parseValue(source);
+    return parseTermTail(source, expr);
+  case DivOp:
+    expr = (Expression *)malloc( sizeof(Expression) );
+    (expr->v).type = DivNode;
+    (expr->v).val.op = Div;
+    expr->leftOperand = lvalue;
+    expr->rightOperand = parseValue(source);
+    return parseTermTail(source, expr);
+  case PlusOp:
+  case MinusOp:
+    unTake(source, token);
+    return lvalue;
+  case VariableName:
+  case PrintOp:
+    unTake(source, token);
+    return NULL;
+  case EOFsymbol:
+    return NULL;
+  default:
+    printf("Syntax Error: Expect a numeric value or an identifier %s\n", token.tok);
+    exit(1);
+  }
+}
+
+
+Expression *parseExpressionTail( FILE *source, Expression *lvalue )
+{
+  Token token = scanner(source);
+  Expression *expr, *child_value;
 
   switch(token.type){
   case PlusOp:
@@ -94,14 +165,16 @@ Expression *parseExpressionTail( FILE *source, Expression *lvalue )
     (expr->v).type = PlusNode;
     (expr->v).val.op = Plus;
     expr->leftOperand = lvalue;
-    expr->rightOperand = parseValue(source);
+    child_value = parseValue(source);
+    expr->rightOperand = parseTermTail(source, child_value);
     return parseExpressionTail(source, expr);
   case MinusOp:
     expr = (Expression *)malloc( sizeof(Expression) );
     (expr->v).type = MinusNode;
     (expr->v).val.op = Minus;
     expr->leftOperand = lvalue;
-    expr->rightOperand = parseValue(source);
+    child_value = parseValue(source);
+    expr->rightOperand = parseTermTail(source, child_value);
     return parseExpressionTail(source, expr);
   case VariableName:
   case PrintOp:
@@ -118,7 +191,7 @@ Expression *parseExpressionTail( FILE *source, Expression *lvalue )
 Expression *parseExpression( FILE *source, Expression *lvalue )
 {
   Token token = scanner(source);
-  Expression *expr;
+  Expression *expr, *child_value;
 
   switch(token.type){
   case PlusOp:
@@ -126,14 +199,21 @@ Expression *parseExpression( FILE *source, Expression *lvalue )
     (expr->v).type = PlusNode;
     (expr->v).val.op = Plus;
     expr->leftOperand = lvalue;
-    expr->rightOperand = parseValue(source);
+    child_value = parseValue(source);
+    expr->rightOperand = parseTermTail(source, child_value);
     return parseExpressionTail(source, expr);
   case MinusOp:
     expr = (Expression *)malloc( sizeof(Expression) );
     (expr->v).type = MinusNode;
     (expr->v).val.op = Minus;
     expr->leftOperand = lvalue;
-    expr->rightOperand = parseValue(source);
+    child_value = parseValue(source);
+    expr->rightOperand = parseTermTail(source, child_value);
+    return parseExpressionTail(source, expr);
+  case MulOp:
+  case DivOp:
+    unTake(source, token);
+    expr = parseTerm(source, lvalue);
     return parseExpressionTail(source, expr);
   case VariableName:
   case PrintOp:

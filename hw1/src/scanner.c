@@ -6,11 +6,11 @@
 
 int checkVariableNameChar(char c) {
   return isgraph(c) &&
-         c != '+' &&
-         c != '-' &&
-         c != '*' &&
-         c != '/' &&
-         c != '=';
+    c != '+' &&
+    c != '-' &&
+    c != '*' &&
+    c != '/' &&
+    c != '=';
 }
 
 Token getNumericToken( FILE *source, char c )
@@ -82,13 +82,13 @@ Token scanner( FILE *source )
     token.tok[1] = '\0';
     if( islower(c) ){
       if( c == 'f' ) {
-	      token.type = FloatDeclaration;
+	token.type = FloatDeclaration;
       } else if( c == 'i' ) {
-	      token.type = IntegerDeclaration;
+	token.type = IntegerDeclaration;
       } else if( c == 'p' ) {
-	      token.type = PrintOp;
+	token.type = PrintOp;
       } else {
-	      return getVariableNameToken(source, c);
+	return getVariableNameToken(source, c);
       }
       return token;
     } else if (checkVariableNameChar(c)) {
@@ -96,28 +96,28 @@ Token scanner( FILE *source )
     }
 
     switch(c) {
-      case '=':
-        token.type = AssignmentOp;
-        return token;
-      case '+':
-        token.type = PlusOp;
-        return token;
-      case '-':
-        token.type = MinusOp;
-        return token;
-      case '*':
-        token.type = MulOp;
-        return token;
-      case '/':
-        token.type = DivOp;
-        return token;
-      case EOF:
-        token.type = EOFsymbol;
-        token.tok[0] = '\0';
-        return token;
-      default:
-        printf("Invalid character : %c\n", c);
-        exit(1);
+    case '=':
+      token.type = AssignmentOp;
+      return token;
+    case '+':
+      token.type = PlusOp;
+      return token;
+    case '-':
+      token.type = MinusOp;
+      return token;
+    case '*':
+      token.type = MulOp;
+      return token;
+    case '/':
+      token.type = DivOp;
+      return token;
+    case EOF:
+      token.type = EOFsymbol;
+      token.tok[0] = '\0';
+      return token;
+    default:
+      printf("Invalid character : %c\n", c);
+      exit(1);
     }
   }
 
