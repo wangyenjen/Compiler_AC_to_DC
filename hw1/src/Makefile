@@ -1,5 +1,5 @@
-All: AcDc.o scanner.o parser.o ast.o symtab.o type_check.o generator.o
-	gcc AcDc.o scanner.o parser.o ast.o symtab.o type_check.o generator.o -o AcDc
+All: AcDc.o scanner.o parser.o ast.o symtab.o type_check.o optimizer.o generator.o
+	gcc AcDc.o scanner.o parser.o ast.o symtab.o type_check.o optimizer.o generator.o -o AcDc
 AcDc.o: AcDc.c parser.h symtab.h type_check.h generator.h header.h
 	gcc -c AcDc.c
 scanner.o: scanner.c scanner.h header.h
@@ -12,6 +12,8 @@ symtab.o: symtab.c symtab.h header.h
 	gcc -c symtab.c
 type_check.o: type_check.c type_check.h header.h
 	gcc -c type_check.c
+optimizer.o: optimizer.c optimizer.h header.h
+	gcc -c optimizer.c
 generator.o: generator.c generator.h header.h
 	gcc -c generator.c
 clean:
