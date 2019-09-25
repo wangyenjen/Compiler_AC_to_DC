@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "symtab.h"
 #include "type_check.h"
+#include "optimizer.h"
 #include "generator.h"
 
 int main( int argc, char *argv[] )
@@ -30,6 +31,7 @@ int main( int argc, char *argv[] )
       fclose(source);
       symtab = build(program);
       check(&program, &symtab);
+      optcode(&program);
       gencode(program, target, &symtab);
     }
   }
