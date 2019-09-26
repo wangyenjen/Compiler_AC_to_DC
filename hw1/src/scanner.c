@@ -65,30 +65,34 @@ Token getVariableNameToken(FILE *source, char c) {
   return token;
 }
 
-Token scanner( FILE *source )
-{
+Token scanner( FILE *source ) {
   char c;
   Token token;
 
-  while( !feof(source) ){
+  while (!feof(source)) {
     c = fgetc(source);
 
-    while( isspace(c) ) c = fgetc(source);
+    while (isspace(c)) {
+      c = fgetc(source);
+    }
 
-    if( isdigit(c) )
+    if (isdigit(c)) {
       return getNumericToken(source, c);
+    }
 
     token.tok[0] = c;
     token.tok[1] = '\0';
-    if( islower(c) ){
-      if( c == 'f' ) {
-	token.type = FloatDeclaration;
-      } else if( c == 'i' ) {
-	token.type = IntegerDeclaration;
-      } else if( c == 'p' ) {
-	token.type = PrintOp;
+    if( islower(c) ) {
+      char c2 = fgetc(source);
+      ungetc(c2, source);
+      if(c == 'f' && !checkVariableNameChar(c2)) {
+	      token.type = FloatDeclaration;
+      } else if(c == 'i' && !checkVariableNameChar(c2)) {
+	      token.type = IntegerDeclaration;
+      } else if(c == 'p' && !checkVariableNameChar(c2)) {
+	      token.type = PrintOp;
       } else {
-	return getVariableNameToken(source, c);
+	      return getVariableNameToken(source, c);
       }
       return token;
     } else if (checkVariableNameChar(c)) {
